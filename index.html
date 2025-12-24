@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -39,13 +38,13 @@
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .subtitle {
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 3vw, 1.2rem);
             opacity: 0.9;
         }
         
@@ -67,7 +66,7 @@
         
         .result-section {
             flex: 2;
-            min-width: 500px;
+            min-width: 300px;
             padding: 20px;
             margin: 10px;
         }
@@ -77,6 +76,7 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #3498db;
+            font-size: clamp(1.3rem, 3vw, 1.6rem);
         }
         
         .form-group {
@@ -135,6 +135,17 @@
             top: 0;
         }
         
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
         .highlight {
             color: #e74c3c;
             font-weight: bold;
@@ -142,7 +153,7 @@
         
         .chart-container {
             width: 100%;
-            height: 400px;
+            height: clamp(300px, 50vw, 400px);
             margin-top: 30px;
             background: white;
             border-radius: 10px;
@@ -154,6 +165,7 @@
         #pressureCanvas {
             width: 100%;
             height: 100%;
+            touch-action: none; /* 防止触摸时的默认行为 */
         }
         
         .chart-controls {
@@ -161,6 +173,7 @@
             justify-content: center;
             margin-top: 15px;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .chart-btn {
@@ -171,6 +184,8 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background 0.3s;
+            flex: 1;
+            min-width: 100px;
         }
         
         .chart-btn:hover {
@@ -189,14 +204,17 @@
             display: flex;
             gap: 15px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
         
         .query-input {
             flex: 2;
+            min-width: 100%;
         }
         
         .query-btn {
             flex: 1;
+            min-width: 100%;
         }
         
         .query-result {
@@ -226,14 +244,45 @@
         @media (max-width: 768px) {
             .content {
                 flex-direction: column;
+                padding: 10px;
             }
             
             .input-section, .result-section {
                 min-width: 100%;
+                margin: 5px 0;
+                padding: 15px;
             }
             
             .query-form {
                 flex-direction: column;
+            }
+            
+            .result-table {
+                max-height: 200px;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+                font-size: 0.9rem;
+            }
+            
+            .chart-container {
+                padding: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .chart-controls {
+                gap: 5px;
+            }
+            
+            .chart-btn {
+                padding: 6px 10px;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -346,6 +395,7 @@
         let isDragging = false;
         let lastX = 0;
         let lastY = 0;
+        let touchStart = null;
         
         // 获取Canvas元素
         const canvas = document.getElementById('pressureCanvas');
@@ -354,8 +404,14 @@
         // 设置Canvas尺寸
         function setCanvasSize() {
             const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
+            // 确保canvas有正确的绘图尺寸（考虑设备像素比）
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            canvas.style.width = `${container.clientWidth}px`;
+            canvas.style.height = `${container.clientHeight}px`;
+            ctx.scale(dpr, dpr);
+            drawChart();
         }
         
         // 页面加载时设置Canvas尺寸
@@ -456,9 +512,21 @@
             // 清除画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const margin = { top: 40, right: 40, bottom: 60, left: 60 };
-            const chartWidth = canvas.width - margin.left - margin.right;
-            const chartHeight = canvas.height - margin.top - margin.bottom;
+            // 获取容器尺寸（考虑CSS尺寸）
+            const containerWidth = canvas.clientWidth;
+            const containerHeight = canvas.clientHeight;
+            
+            // 计算实际边距，根据屏幕尺寸调整
+            const baseMargin = Math.min(40, containerWidth * 0.1);
+            const margin = { 
+                top: baseMargin, 
+                right: baseMargin, 
+                bottom: Math.max(baseMargin, 50), 
+                left: Math.max(baseMargin, 50)
+            };
+            
+            const chartWidth = containerWidth - margin.left - margin.right;
+            const chartHeight = containerHeight - margin.top - margin.bottom;
             
             // 计算数据范围
             const minPressure = Math.min(...calculationData.pressure);
@@ -480,21 +548,24 @@
             ctx.strokeStyle = '#e0e0e0';
             ctx.lineWidth = 1;
             
+            // 动态计算网格线数量，根据屏幕尺寸调整
+            const gridLines = window.innerWidth < 768 ? 5 : 10;
+            
             // 水平网格线
-            for (let i = 0; i <= 10; i++) {
-                const y = margin.top + (i / 10) * chartHeight;
+            for (let i = 0; i <= gridLines; i++) {
+                const y = margin.top + (i / gridLines) * chartHeight;
                 ctx.beginPath();
                 ctx.moveTo(margin.left, y);
-                ctx.lineTo(canvas.width - margin.right, y);
+                ctx.lineTo(containerWidth - margin.right, y);
                 ctx.stroke();
             }
             
             // 垂直网格线
-            for (let i = 0; i <= 10; i++) {
-                const x = margin.left + (i / 10) * chartWidth;
+            for (let i = 0; i <= gridLines; i++) {
+                const x = margin.left + (i / gridLines) * chartWidth;
                 ctx.beginPath();
                 ctx.moveTo(x, margin.top);
-                ctx.lineTo(x, canvas.height - margin.bottom);
+                ctx.lineTo(x, containerHeight - margin.bottom);
                 ctx.stroke();
             }
             
@@ -504,40 +575,41 @@
             
             // X轴
             ctx.beginPath();
-            ctx.moveTo(margin.left, canvas.height - margin.bottom);
-            ctx.lineTo(canvas.width - margin.right, canvas.height - margin.bottom);
+            ctx.moveTo(margin.left, containerHeight - margin.bottom);
+            ctx.lineTo(containerWidth - margin.right, containerHeight - margin.bottom);
             ctx.stroke();
             
             // Y轴
             ctx.beginPath();
             ctx.moveTo(margin.left, margin.top);
-            ctx.lineTo(margin.left, canvas.height - margin.bottom);
+            ctx.lineTo(margin.left, containerHeight - margin.bottom);
             ctx.stroke();
             
             // 绘制刻度
             ctx.fillStyle = '#000';
-            ctx.font = '12px Arial';
+            const fontSize = window.innerWidth < 768 ? 10 : 12;
+            ctx.font = `${fontSize}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
             
             // X轴刻度
-            for (let i = 0; i <= 10; i++) {
-                const x = margin.left + (i / 10) * chartWidth;
-                const value = scaledMinPressure + (i / 10) * pressureRange;
+            for (let i = 0; i <= gridLines; i++) {
+                const x = margin.left + (i / gridLines) * chartWidth;
+                const value = scaledMinPressure + (i / gridLines) * pressureRange;
                 ctx.beginPath();
-                ctx.moveTo(x, canvas.height - margin.bottom);
-                ctx.lineTo(x, canvas.height - margin.bottom + 5);
+                ctx.moveTo(x, containerHeight - margin.bottom);
+                ctx.lineTo(x, containerHeight - margin.bottom + 5);
                 ctx.stroke();
                 
-                ctx.fillText(value.toFixed(1), x, canvas.height - margin.bottom + 10);
+                ctx.fillText(value.toFixed(1), x, containerHeight - margin.bottom + 10);
             }
             
             // Y轴刻度
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
-            for (let i = 0; i <= 10; i++) {
-                const y = canvas.height - margin.bottom - (i / 10) * chartHeight;
-                const value = scaledMinMp + (i / 10) * mpRange;
+            for (let i = 0; i <= gridLines; i++) {
+                const y = containerHeight - margin.bottom - (i / gridLines) * chartHeight;
+                const value = scaledMinMp + (i / gridLines) * mpRange;
                 ctx.beginPath();
                 ctx.moveTo(margin.left, y);
                 ctx.lineTo(margin.left - 5, y);
@@ -548,40 +620,41 @@
             
             // 绘制轴标签
             ctx.fillStyle = '#000';
-            ctx.font = 'bold 14px Arial';
+            ctx.font = `bold ${fontSize + 2}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('压力 p (MPa)', canvas.width / 2, canvas.height - 15);
+            ctx.fillText('压力 p (MPa)', containerWidth / 2, containerHeight - 15);
             
             ctx.save();
-            ctx.translate(20, canvas.height / 2);
+            ctx.translate(20, containerHeight / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.textAlign = 'center';
             ctx.fillText('假压力 m(p) (10²MPa)', 0, 0);
             ctx.restore();
             
             // 绘制标题
-            ctx.font = 'bold 16px Arial';
-            ctx.fillText('假压力与压力关系图', canvas.width / 2, 20);
+            ctx.font = `bold ${fontSize + 4}px Arial`;
+            ctx.fillText('假压力与压力关系图', containerWidth / 2, 20);
             
             // 绘制数据点
             ctx.fillStyle = '#e74c3c';
+            const pointSize = window.innerWidth < 768 ? 4 : 5;
             for (let i = 0; i < calculationData.pressure.length; i++) {
                 const x = margin.left + ((calculationData.pressure[i] - scaledMinPressure) / pressureRange) * chartWidth;
-                const y = canvas.height - margin.bottom - ((calculationData.m_p[i] - scaledMinMp) / mpRange) * chartHeight;
+                const y = containerHeight - margin.bottom - ((calculationData.m_p[i] - scaledMinMp) / mpRange) * chartHeight;
                 
                 ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.arc(x, y, pointSize, 0, Math.PI * 2);
                 ctx.fill();
             }
             
             // 绘制连线
             ctx.strokeStyle = '#3498db';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = window.innerWidth < 768 ? 2 : 3;
             ctx.beginPath();
             
             for (let i = 0; i < calculationData.pressure.length; i++) {
                 const x = margin.left + ((calculationData.pressure[i] - scaledMinPressure) / pressureRange) * chartWidth;
-                const y = canvas.height - margin.bottom - ((calculationData.m_p[i] - scaledMinMp) / mpRange) * chartHeight;
+                const y = containerHeight - margin.bottom - ((calculationData.m_p[i] - scaledMinMp) / mpRange) * chartHeight;
                 
                 if (i === 0) {
                     ctx.moveTo(x, y);
@@ -611,18 +684,19 @@
             drawChart();
         }
         
-        // 拖拽功能
+        // 鼠标拖拽功能
         canvas.addEventListener('mousedown', (e) => {
             isDragging = true;
             lastX = e.clientX;
             lastY = e.clientY;
+            canvas.style.cursor = 'grabbing';
         });
         
         canvas.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             
-            const dx = (e.clientX - lastX) / canvas.width;
-            const dy = (e.clientY - lastY) / canvas.height;
+            const dx = (e.clientX - lastX) / canvas.clientWidth;
+            const dy = (e.clientY - lastY) / canvas.clientHeight;
             
             offsetX += dx;
             offsetY += dy;
@@ -637,12 +711,59 @@
             drawChart();
         });
         
-        canvas.addEventListener('mouseup', () => {
-            isDragging = false;
+        window.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                canvas.style.cursor = 'grab';
+            }
         });
         
         canvas.addEventListener('mouseleave', () => {
+            if (isDragging) {
+                isDragging = false;
+                canvas.style.cursor = 'grab';
+            }
+        });
+        
+        // 触摸设备支持
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStart = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    time: Date.now()
+                };
+                isDragging = true;
+                e.preventDefault(); // 防止滚动
+            }
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            if (!isDragging || e.touches.length !== 1) return;
+            
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            
+            const dx = (currentX - touchStart.x) / canvas.clientWidth;
+            const dy = (currentY - touchStart.y) / canvas.clientHeight;
+            
+            offsetX += dx;
+            offsetY += dy;
+            
+            // 限制偏移范围
+            offsetX = Math.max(0, Math.min(offsetX, 0.8));
+            offsetY = Math.max(0, Math.min(offsetY, 0.8));
+            
+            touchStart.x = currentX;
+            touchStart.y = currentY;
+            
+            drawChart();
+            e.preventDefault(); // 防止滚动
+        });
+        
+        canvas.addEventListener('touchend', () => {
             isDragging = false;
+            touchStart = null;
         });
         
         // 查询任意压力下的假压力
@@ -702,6 +823,9 @@
                 <span class="query-value">${interpolatedMp.toFixed(3)} (10²MPa)</span>
             `;
         }
+        
+        // 初始化图表样式
+        canvas.style.cursor = 'grab';
         
         // 页面加载时自动计算
         window.onload = calculate;
