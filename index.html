@@ -3,832 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>假压力计算器</title>
+    <title>假压力计算器（按表5-1）</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-        
-        header {
-            background: linear-gradient(to right, #2c3e50, #4a6491);
-            color: white;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-        }
-        
-        h1 {
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: clamp(1rem, 3vw, 1.2rem);
-            opacity: 0.9;
-        }
-        
-        .content {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 20px;
-        }
-        
-        .input-section {
-            flex: 1;
-            min-width: 300px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            margin: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .result-section {
-            flex: 2;
-            min-width: 300px;
-            padding: 20px;
-            margin: 10px;
-        }
-        
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3498db;
-            font-size: clamp(1.3rem, 3vw, 1.6rem);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        input, button, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
-        }
-        
-        button {
-            background: linear-gradient(to right, #3498db, #2c3e50);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .result-table {
-            background-color: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .result-table th {
-            background-color: #27ae60;
-            position: sticky;
-            top: 0;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .highlight {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        
-        .chart-container {
-            width: 100%;
-            height: clamp(300px, 50vw, 400px);
-            margin-top: 30px;
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-        
-        #pressureCanvas {
-            width: 100%;
-            height: 100%;
-            touch-action: none; /* 防止触摸时的默认行为 */
-        }
-        
-        .chart-controls {
-            display: flex;
-            justify-content: center;
-            margin-top: 15px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .chart-btn {
-            padding: 8px 15px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-            flex: 1;
-            min-width: 100px;
-        }
-        
-        .chart-btn:hover {
-            background: #2980b9;
-        }
-        
-        .query-section {
-            background-color: #e3f2fd;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .query-form {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .query-input {
-            flex: 2;
-            min-width: 100%;
-        }
-        
-        .query-btn {
-            flex: 1;
-            min-width: 100%;
-        }
-        
-        .query-result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-size: 1.2rem;
-            text-align: center;
-        }
-        
-        .query-value {
-            color: #e74c3c;
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #2c3e50;
-            color: white;
-            font-size: 0.9rem;
-        }
-        
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
-                padding: 10px;
-            }
-            
-            .input-section, .result-section {
-                min-width: 100%;
-                margin: 5px 0;
-                padding: 15px;
-            }
-            
-            .query-form {
-                flex-direction: column;
-            }
-            
-            .result-table {
-                max-height: 200px;
-            }
-            
-            th, td {
-                padding: 8px 5px;
-                font-size: 0.9rem;
-            }
-            
-            .chart-container {
-                padding: 5px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            
-            .chart-controls {
-                gap: 5px;
-            }
-            
-            .chart-btn {
-                padding: 6px 10px;
-                font-size: 0.9rem;
-            }
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); color: #333; line-height: 1.6; padding: 20px; min-height: 100vh; }
+        .container { width: min(1800px, 98vw); margin: 0 auto; background-color: rgba(255,255,255,0.96); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.3); overflow: hidden; }
+        header { background: linear-gradient(to right, #2c3e50, #4a6491); color: white; padding: 25px; text-align: center; }
+        h1 { font-size: clamp(1.8rem,5vw,2.5rem); margin-bottom: 8px; }
+        .subtitle { font-size: clamp(1rem,3vw,1.15rem); opacity: .92; }
+        .content { display: flex; flex-wrap: nowrap; align-items: flex-start; padding: 20px; gap: 20px; }
+        .input-section, .result-section { background: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,.1); padding: 20px; }
+        .input-section { flex: 0 0 360px; min-width: 360px; }
+        .result-section { flex: 1 1 auto; min-width: 0; }
+        h2 { color: #2c3e50; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #3498db; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+        input, button { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+        input:focus { outline: none; border-color: #3498db; box-shadow: 0 0 5px rgba(52,152,219,.5); }
+        button { background: linear-gradient(to right, #3498db, #2c3e50); color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 8px; }
+        button:hover { transform: translateY(-1px); }
+        .result-table { background: #fff; border-radius: 10px; overflow: auto; box-shadow: 0 4px 8px rgba(0,0,0,.08); margin-top: 20px; max-height: 70vh; width: 100%; }
+        table { width: 100%; border-collapse: collapse; min-width: 980px; }
+        th:first-child, td:first-child { position: sticky; left: 0; z-index: 2; background: inherit; }
+        thead th:first-child { z-index: 3; background: #27ae60; }
+        th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #ddd; white-space: nowrap; font-size: 14px; }
+        thead th { background: #27ae60; color: #fff; position: sticky; top: 0; z-index: 1; }
+        tbody tr:nth-child(even) { background: #fafafa; }
+        .note { margin-top: 14px; background: #eef7ff; border-left: 4px solid #3498db; padding: 12px 14px; border-radius: 6px; font-size: .95rem; }
+        .chart-container { width: 100%; height: 420px; margin-top: 24px; background: white; border-radius: 10px; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,.08); }
+        #pressureCanvas { width: 100%; height: 100%; }
+        .query-section { background: #e3f2fd; padding: 18px; border-radius: 10px; margin-top: 24px; box-shadow: 0 4px 8px rgba(0,0,0,.08); }
+        .query-form { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+        .query-form > div { flex: 1 1 220px; }
+        .query-result { margin-top: 15px; padding: 14px; background: #fff; border-radius: 8px; text-align: center; font-size: 1.1rem; }
+        .highlight, .query-value { color: #e74c3c; font-weight: bold; }
+        footer { text-align: center; padding: 18px; background: #2c3e50; color: #fff; font-size: .92rem; }
+        @media (max-width: 992px) { .content { flex-wrap: wrap; } .input-section { flex: 1 1 100%; min-width: 0; } .result-section { flex: 1 1 100%; min-width: 0; } }
+        @media (max-width: 768px) { body { padding: 10px; } .content { padding: 12px; gap: 12px; } .chart-container { height: 320px; } .result-table { max-height: 55vh; } table { min-width: 980px; } th, td { font-size: 13px; padding: 8px 6px; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>假压力计算器</h1>
-            <div class="subtitle">基于数值积分方法的假压力计算工具</div>
-        </header>
-        
-        <div class="content">
-            <div class="input-section">
-                <h2>输入参数</h2>
-                
-                <div class="form-group">
-                    <label for="pressure">压力 p (MPa)：</label>
-                    <input type="text" id="pressure" placeholder="例如: 27.95 26.91 25.87 ..." value="2.76 5.52 8.28 11.04 13.8 16.56 19.32 22.08 24.84 27.6 30.36">
-                </div>
-                
-                <div class="form-group">
-                    <label for="viscosity">气体粘度 μg (mPa·s)：</label>
-                    <input type="text" id="viscosity" placeholder="例如: 0.0243 0.0237 0.0231 ..." value="0.01286 0.0139 0.0153 0.0168 0.0184 0.0201 0.0217 0.0234 0.025 0.0266 0.02831">
-                </div>
-                
-                <div class="form-group">
-                    <label for="zFactor">气体偏差因子 Z：</label>
-                    <input type="text" id="zFactor" placeholder="例如: 0.9008 0.8904 0.8805 ..." value="0.937 0.822 0.832 0.794 0.77 0.763 0.775 0.797 0.827 0.86 0.896">
-                </div>
-                
-                <div class="form-group">
-                    <label for="deltaP">压力步长 Δp (MPa)：</label>
-                    <input type="number" id="deltaP" value="2.76" step="0.01">
-                </div>
-                
-                <button id="calculateBtn">计算假压力</button>
+<div class="container">
+    <header>
+        <h1>假压力计算器</h1>
+        <div class="subtitle">按图中表 5-1 的数值积分过程输出：f(p)、平均项、Δp、增量与累计假压力</div>
+    </header>
+
+    <div class="content">
+        <div class="input-section">
+            <h2>输入参数</h2>
+            <div class="form-group">
+                <label for="pressure">压力 p (MPa)</label>
+                <input type="text" id="pressure" value="2.76 5.52 8.28 11.04 13.8 16.56 19.32 22.08 24.84 27.6 30.36">
             </div>
-            
-            <div class="result-section">
-                <h2>计算结果</h2>
-                
-                <div class="result-table">
-                    <table id="resultTable">
-                        <thead>
-                            <tr>
-                                <th>序号</th>
-                                <th>压力 p (MPa)</th>
-                                <th>假压力 m(p) (10^11 MPa/s)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultBody">
-                            <!-- 结果将通过JavaScript填充 -->
-                        </tbody>
-                    </table>
+            <div class="form-group">
+                <label for="viscosity">气体粘度 μg (mPa·s)</label>
+                <input type="text" id="viscosity" value="0.01286 0.01390 0.01530 0.01680 0.01840 0.02010 0.02170 0.02340 0.02500 0.02660 0.02831">
+            </div>
+            <div class="form-group">
+                <label for="zFactor">气体偏差因子 Z</label>
+                <input type="text" id="zFactor" value="0.937 0.882 0.832 0.794 0.770 0.763 0.775 0.797 0.827 0.860 0.896">
+            </div>
+<button id="calculateBtn">计算假压力</button>
+                   </div>
+
+        <div class="result-section">
+            <h2>计算结果</h2>
+            <div class="result-table">
+                <table id="resultTable">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>p (MPa)</th>
+                        <th>μg (mPa·s)</th>
+                        <th>Z</th>
+                        <th>2p/(μgZ)*10^11（1/s）</th>
+                        <th>2p平均/(μgZ)*10^11（1/s）</th>
+                        <th>Δp (MPa)</th>
+                        <th>2p平均/(μgZ)×Δp*10^11（MPa/s）</th>
+                        <th>m(p) *10^11（MPa/s）</th>
+                    </tr>
+                    </thead>
+                    <tbody id="resultBody"></tbody>
+                </table>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="pressureCanvas"></canvas>
+            </div>
+
+            <div class="query-section">
+                <h2>假压力查询</h2>
+                <div class="query-form">
+                    <div><input type="number" id="queryPressure" placeholder="输入压力值 (MPa)" step="0.01"></div>
+                    <div><button id="queryBtn">查询</button></div>
                 </div>
-                
-                <h2 style="margin-top: 30px;">假压力与压力关系图</h2>
-                <div class="chart-container">
-                    <canvas id="pressureCanvas"></canvas>
-                </div>
-                
-                <div class="chart-controls">
-                    <button class="chart-btn" id="zoomInBtn">放大图表</button>
-                    <button class="chart-btn" id="zoomOutBtn">缩小图表</button>
-                    <button class="chart-btn" id="resetZoomBtn">重置缩放</button>
-                </div>
-                
-                <div class="query-section">
-                    <h2>假压力查询</h2>
-                    <p>输入任意压力值，查询对应的假压力：</p>
-                    
-                    <div class="query-form">
-                        <div class="query-input">
-                            <input type="number" id="queryPressure" placeholder="输入压力值 (MPa)" min="11.21" max="27.95" step="0.01">
-                        </div>
-                        <div class="query-btn">
-                            <button id="queryBtn">查询假压力</button>
-                        </div>
-                    </div>
-                    
-                    <div class="query-result">
-                        <div id="queryResult">查询结果将显示在这里</div>
-                    </div>
-                </div>
+                <div class="query-result"><div id="queryResult">查询结果将显示在这里</div></div>
             </div>
         </div>
-        
-        <footer>
-            <p>假压力计算器 | 基于数值积分方法 | 计算结果单位: 10²MPa | 离线图表功能</p>
-        </footer>
     </div>
 
-    <script>
-        document.getElementById('calculateBtn').addEventListener('click', calculate);
-        document.getElementById('zoomInBtn').addEventListener('click', zoomIn);
-        document.getElementById('zoomOutBtn').addEventListener('click', zoomOut);
-        document.getElementById('resetZoomBtn').addEventListener('click', resetZoom);
-        document.getElementById('queryBtn').addEventListener('click', queryPressure);
-        
-        // 存储计算结果
-        let calculationData = {
-            pressure: [],
-            m_p: []
+    <footer>输出方式已按图片中的数值积分表调整，默认示例数据可复现图中 m(p) 结果。</footer>
+</div>
+
+<script>
+const canvas = document.getElementById('pressureCanvas');
+const ctx = canvas.getContext('2d');
+let calculationData = { pressure: [], m_p: [], rows: [] };
+
+document.getElementById('calculateBtn').addEventListener('click', calculate);
+document.getElementById('queryBtn').addEventListener('click', queryPressure);
+window.addEventListener('load', () => { setCanvasSize(); calculate(); });
+window.addEventListener('resize', setCanvasSize);
+
+function setCanvasSize() {
+    const container = canvas.parentElement;
+    const dpr = window.devicePixelRatio || 1;
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    drawChart();
+}
+
+function parseSeries(id, name) {
+    const values = document.getElementById(id).value.trim().split(/\s+/).map(Number);
+    if (!values.length || values.some(v => Number.isNaN(v))) {
+        throw new Error(`${name} 存在空值或非数字`);
+    }
+    return values;
+}
+
+function calculate() {
+    try {
+        const p = parseSeries('pressure', '压力');
+        const mu = parseSeries('viscosity', '粘度');
+        const z = parseSeries('zFactor', 'Z 因子');
+        const scaleFactor = 0.01;
+
+        if (p.length !== mu.length || p.length !== z.length) throw new Error('三组数据长度必须一致');
+        if (p.length < 1) throw new Error('至少需要一组数据');
+                for (let i = 0; i < p.length; i++) {
+            if (mu[i] <= 0 || z[i] <= 0) throw new Error(`第 ${i + 1} 行 μg 和 Z 必须大于 0`);
+            if (i > 0 && p[i] <= p[i - 1]) throw new Error('压力必须按从小到大排列，才能按表格方式积分');
+        }
+
+        const rows = [];
+        let cumulative = 0;
+        for (let i = 0; i < p.length; i++) {
+            const f = (2 * p[i]) / (mu[i] * z[i]) * scaleFactor;
+            const avg = i === 0 ? f / 2 : (rows[i - 1].f + f) / 2;
+            const deltaP = i === 0 ? p[i] : (p[i] - p[i - 1]);
+            const increment = avg * deltaP;
+            cumulative += increment;
+            rows.push({
+                index: i + 1,
+                p: p[i],
+                mu: mu[i],
+                z: z[i],
+                f,
+                avg,
+                deltaP,
+                increment,
+                m: cumulative
+            });
+        }
+
+        calculationData = {
+            pressure: rows.map(r => r.p),
+            m_p: rows.map(r => r.m),
+            rows
         };
-        
-        // 图表状态变量
-        let zoomLevel = 1;
-        let offsetX = 0;
-        let offsetY = 0;
-        let isDragging = false;
-        let lastX = 0;
-        let lastY = 0;
-        let touchStart = null;
-        
-        // 获取Canvas元素
-        const canvas = document.getElementById('pressureCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // 设置Canvas尺寸
-        function setCanvasSize() {
-            const container = canvas.parentElement;
-            // 确保canvas有正确的绘图尺寸（考虑设备像素比）
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = container.clientWidth * dpr;
-            canvas.height = container.clientHeight * dpr;
-            canvas.style.width = `${container.clientWidth}px`;
-            canvas.style.height = `${container.clientHeight}px`;
-            ctx.scale(dpr, dpr);
-            drawChart();
-        }
-        
-        // 页面加载时设置Canvas尺寸
-        window.addEventListener('load', () => {
-            setCanvasSize();
-            calculate();
-        });
-        
-        // 窗口大小变化时调整Canvas尺寸
-        window.addEventListener('resize', setCanvasSize);
-        
-        // 计算函数
-        function calculate() {
-            // 获取输入值
-            const pressureStr = document.getElementById('pressure').value;
-            const viscosityStr = document.getElementById('viscosity').value;
-            const zFactorStr = document.getElementById('zFactor').value;
-            const deltaP = parseFloat(document.getElementById('deltaP').value);
-            
-            // 将输入的字符串分割为数组（使用空格分隔）
-            const pArray = pressureStr.split(/\s+/).filter(item => item).map(item => parseFloat(item.trim()));
-            const muArray = viscosityStr.split(/\s+/).filter(item => item).map(item => parseFloat(item.trim()));
-            const zArray = zFactorStr.split(/\s+/).filter(item => item).map(item => parseFloat(item.trim()));
-            
-            // 验证输入
-            if (pArray.length === 0 || muArray.length === 0 || zArray.length === 0) {
-                alert('错误：输入数据不能为空！');
-                return;
-            }
-            
-            if (pArray.length !== muArray.length || pArray.length !== zArray.length) {
-                alert('错误：输入数组长度不一致！');
-                return;
-            }
-            
-            if (isNaN(deltaP)) {
-                alert('错误：压力步长必须是数字！');
-                return;
-            }
-            
-            const n = pArray.length;
-            const m_p = new Array(n); // 假压力数组
-            
-            // 计算第一行（序号1）
-            const p_avg1 = pArray[0] / 2;
-            const term1 = (2 * p_avg1) / (muArray[0] * zArray[0]) * 0.01;
-            m_p[0] = term1 * deltaP;
-            
-            // 计算后续行（序号2到n）
-            for (let i = 1; i < n; i++) {
-                const p_avg = (pArray[i-1] + pArray[i]) / 2;
-                const term = (2 * p_avg) / (muArray[i] * zArray[i]) * 0.01;
-                m_p[i] = m_p[i-1] + term * deltaP;
-            }
-            
-            // 存储计算结果
-            calculationData = {
-                pressure: pArray,
-                m_p: m_p
-            };
-            
-            // 显示结果
-            displayResults(pArray, m_p);
-            
-            // 重置缩放状态
-            resetZoom();
-            
-            // 绘制图表
-            drawChart();
-        }
-        
-        // 显示结果函数
-        function displayResults(pArray, m_p) {
-            const resultBody = document.getElementById('resultBody');
-            resultBody.innerHTML = '';
-            
-            for (let i = 0; i < pArray.length; i++) {
-                const row = document.createElement('tr');
-                const cell1 = document.createElement('td');
-                const cell2 = document.createElement('td');
-                const cell3 = document.createElement('td');
-                
-                cell1.textContent = i + 1;
-                cell2.textContent = pArray[i].toFixed(2);
-                cell3.textContent = m_p[i].toFixed(3); // 保留三位小数
-                
-                row.appendChild(cell1);
-                row.appendChild(cell2);
-                row.appendChild(cell3);
-                resultBody.appendChild(row);
-            }
-        }
-        
-        // 绘制图表函数
-        function drawChart() {
-            if (!calculationData.pressure.length) return;
-            
-            // 清除画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 获取容器尺寸（考虑CSS尺寸）
-            const containerWidth = canvas.clientWidth;
-            const containerHeight = canvas.clientHeight;
-            
-            // 计算实际边距，根据屏幕尺寸调整
-            const baseMargin = Math.min(40, containerWidth * 0.1);
-            const margin = { 
-                top: baseMargin, 
-                right: baseMargin, 
-                bottom: Math.max(baseMargin, 50), 
-                left: Math.max(baseMargin, 50)
-            };
-            
-            const chartWidth = containerWidth - margin.left - margin.right;
-            const chartHeight = containerHeight - margin.top - margin.bottom;
-            
-            // 计算数据范围
-            const minPressure = Math.min(...calculationData.pressure);
-            const maxPressure = Math.max(...calculationData.pressure);
-            const minMp = Math.min(...calculationData.m_p);
-            const maxMp = Math.max(...calculationData.m_p);
-            
-            // 应用缩放和平移
-            const scaledMinPressure = minPressure + (maxPressure - minPressure) * offsetX;
-            const scaledMaxPressure = maxPressure - (maxPressure - minPressure) * offsetX;
-            const scaledMinMp = minMp + (maxMp - minMp) * offsetY;
-            const scaledMaxMp = maxMp - (maxMp - minMp) * offsetY;
-            
-            // 计算缩放后的数据范围
-            const pressureRange = scaledMaxPressure - scaledMinPressure;
-            const mpRange = scaledMaxMp - scaledMinMp;
-            
-            // 绘制网格
-            ctx.strokeStyle = '#e0e0e0';
-            ctx.lineWidth = 1;
-            
-            // 动态计算网格线数量，根据屏幕尺寸调整
-            const gridLines = window.innerWidth < 768 ? 5 : 10;
-            
-            // 水平网格线
-            for (let i = 0; i <= gridLines; i++) {
-                const y = margin.top + (i / gridLines) * chartHeight;
-                ctx.beginPath();
-                ctx.moveTo(margin.left, y);
-                ctx.lineTo(containerWidth - margin.right, y);
-                ctx.stroke();
-            }
-            
-            // 垂直网格线
-            for (let i = 0; i <= gridLines; i++) {
-                const x = margin.left + (i / gridLines) * chartWidth;
-                ctx.beginPath();
-                ctx.moveTo(x, margin.top);
-                ctx.lineTo(x, containerHeight - margin.bottom);
-                ctx.stroke();
-            }
-            
-            // 绘制坐标轴
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            
-            // X轴
-            ctx.beginPath();
-            ctx.moveTo(margin.left, containerHeight - margin.bottom);
-            ctx.lineTo(containerWidth - margin.right, containerHeight - margin.bottom);
-            ctx.stroke();
-            
-            // Y轴
-            ctx.beginPath();
-            ctx.moveTo(margin.left, margin.top);
-            ctx.lineTo(margin.left, containerHeight - margin.bottom);
-            ctx.stroke();
-            
-            // 绘制刻度
-            ctx.fillStyle = '#000';
-            const fontSize = window.innerWidth < 768 ? 10 : 12;
-            ctx.font = `${fontSize}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            
-            // X轴刻度
-            for (let i = 0; i <= gridLines; i++) {
-                const x = margin.left + (i / gridLines) * chartWidth;
-                const value = scaledMinPressure + (i / gridLines) * pressureRange;
-                ctx.beginPath();
-                ctx.moveTo(x, containerHeight - margin.bottom);
-                ctx.lineTo(x, containerHeight - margin.bottom + 5);
-                ctx.stroke();
-                
-                ctx.fillText(value.toFixed(1), x, containerHeight - margin.bottom + 10);
-            }
-            
-            // Y轴刻度
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'middle';
-            for (let i = 0; i <= gridLines; i++) {
-                const y = containerHeight - margin.bottom - (i / gridLines) * chartHeight;
-                const value = scaledMinMp + (i / gridLines) * mpRange;
-                ctx.beginPath();
-                ctx.moveTo(margin.left, y);
-                ctx.lineTo(margin.left - 5, y);
-                ctx.stroke();
-                
-                ctx.fillText(value.toFixed(0), margin.left - 10, y);
-            }
-            
-            // 绘制轴标签
-            ctx.fillStyle = '#000';
-            ctx.font = `bold ${fontSize + 2}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('压力 p (MPa)', containerWidth / 2, containerHeight - 15);
-            
-            ctx.save();
-            ctx.translate(20, containerHeight / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.textAlign = 'center';
-            ctx.fillText('假压力 m(p) (10^11 MPa/s)', 0, 0);
-            ctx.restore();
-            
-            // 绘制标题
-            ctx.font = `bold ${fontSize + 4}px Arial`;
-            ctx.fillText('假压力与压力关系图', containerWidth / 2, 20);
-            
-            // 绘制数据点
-            ctx.fillStyle = '#e74c3c';
-            const pointSize = window.innerWidth < 768 ? 4 : 5;
-            for (let i = 0; i < calculationData.pressure.length; i++) {
-                const x = margin.left + ((calculationData.pressure[i] - scaledMinPressure) / pressureRange) * chartWidth;
-                const y = containerHeight - margin.bottom - ((calculationData.m_p[i] - scaledMinMp) / mpRange) * chartHeight;
-                
-                ctx.beginPath();
-                ctx.arc(x, y, pointSize, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // 绘制连线
-            ctx.strokeStyle = '#3498db';
-            ctx.lineWidth = window.innerWidth < 768 ? 2 : 3;
-            ctx.beginPath();
-            
-            for (let i = 0; i < calculationData.pressure.length; i++) {
-                const x = margin.left + ((calculationData.pressure[i] - scaledMinPressure) / pressureRange) * chartWidth;
-                const y = containerHeight - margin.bottom - ((calculationData.m_p[i] - scaledMinMp) / mpRange) * chartHeight;
-                
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            }
-            
-            ctx.stroke();
-        }
-        
-        // 缩放功能
-        function zoomIn() {
-            zoomLevel *= 1.2;
-            drawChart();
-        }
-        
-        function zoomOut() {
-            zoomLevel /= 1.2;
-            drawChart();
-        }
-        
-        function resetZoom() {
-            zoomLevel = 1;
-            offsetX = 0;
-            offsetY = 0;
-            drawChart();
-        }
-        
-        // 鼠标拖拽功能
-        canvas.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            canvas.style.cursor = 'grabbing';
-        });
-        
-        canvas.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            
-            const dx = (e.clientX - lastX) / canvas.clientWidth;
-            const dy = (e.clientY - lastY) / canvas.clientHeight;
-            
-            offsetX += dx;
-            offsetY += dy;
-            
-            // 限制偏移范围
-            offsetX = Math.max(0, Math.min(offsetX, 0.8));
-            offsetY = Math.max(0, Math.min(offsetY, 0.8));
-            
-            lastX = e.clientX;
-            lastY = e.clientY;
-            
-            drawChart();
-        });
-        
-        window.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                canvas.style.cursor = 'grab';
-            }
-        });
-        
-        canvas.addEventListener('mouseleave', () => {
-            if (isDragging) {
-                isDragging = false;
-                canvas.style.cursor = 'grab';
-            }
-        });
-        
-        // 触摸设备支持
-        canvas.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) {
-                touchStart = {
-                    x: e.touches[0].clientX,
-                    y: e.touches[0].clientY,
-                    time: Date.now()
-                };
-                isDragging = true;
-                e.preventDefault(); // 防止滚动
-            }
-        });
-        
-        canvas.addEventListener('touchmove', (e) => {
-            if (!isDragging || e.touches.length !== 1) return;
-            
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            
-            const dx = (currentX - touchStart.x) / canvas.clientWidth;
-            const dy = (currentY - touchStart.y) / canvas.clientHeight;
-            
-            offsetX += dx;
-            offsetY += dy;
-            
-            // 限制偏移范围
-            offsetX = Math.max(0, Math.min(offsetX, 0.8));
-            offsetY = Math.max(0, Math.min(offsetY, 0.8));
-            
-            touchStart.x = currentX;
-            touchStart.y = currentY;
-            
-            drawChart();
-            e.preventDefault(); // 防止滚动
-        });
-        
-        canvas.addEventListener('touchend', () => {
-            isDragging = false;
-            touchStart = null;
-        });
-        
-        // 查询任意压力下的假压力
-        function queryPressure() {
-            const queryValue = parseFloat(document.getElementById('queryPressure').value);
-            
-            if (isNaN(queryValue)) {
-                alert('请输入有效的压力值');
-                return;
-            }
-            
-            if (!calculationData.pressure.length) {
-                alert('请先计算假压力数据');
-                return;
-            }
-            
-            const minPressure = Math.min(...calculationData.pressure);
-            const maxPressure = Math.max(...calculationData.pressure);
-            
-            if (queryValue < minPressure || queryValue > maxPressure) {
-                alert(`压力值必须在 ${minPressure.toFixed(2)} 到 ${maxPressure.toFixed(2)} MPa 之间`);
-                return;
-            }
-            
-            // 找到最接近的两个点进行插值
-            let lowerIndex = -1;
-            let upperIndex = -1;
-            
-            // 找到查询值所在区间
-            for (let i = 0; i < calculationData.pressure.length - 1; i++) {
-                if (calculationData.pressure[i] >= queryValue && calculationData.pressure[i+1] <= queryValue) {
-                    lowerIndex = i;
-                    upperIndex = i + 1;
-                    break;
-                }
-            }
-            
-            if (lowerIndex === -1 || upperIndex === -1) {
-                alert('无法找到合适的插值区间');
-                return;
-            }
-            
-            // 线性插值计算假压力
-            const p1 = calculationData.pressure[lowerIndex];
-            const p2 = calculationData.pressure[upperIndex];
-            const m1 = calculationData.m_p[lowerIndex];
-            const m2 = calculationData.m_p[upperIndex];
-            
-            // 计算插值比例
-            const ratio = (queryValue - p1) / (p2 - p1);
-            const interpolatedMp = m1 + (m2 - m1) * ratio;
-            
-            // 显示结果
-            const resultElement = document.getElementById('queryResult');
-            resultElement.innerHTML = `
-                压力 <span class="highlight">${queryValue.toFixed(2)} MPa</span> 对应的假压力为
-                <span class="query-value">${interpolatedMp.toFixed(3)} (10²MPa)</span>
-            `;
-        }
-        
-        // 初始化图表样式
-        canvas.style.cursor = 'grab';
-        
-        // 页面加载时自动计算
-        window.onload = calculate;
-    </script>
+
+        displayResults(rows);
+        drawChart();
+        document.getElementById('queryResult').textContent = '查询结果将显示在这里';
+    } catch (err) {
+        alert('计算失败：' + err.message);
+    }
+}
+
+function displayResults(rows) {
+    const tbody = document.getElementById('resultBody');
+    tbody.innerHTML = '';
+    rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.index}</td>
+            <td>${r.p.toFixed(2)}</td>
+            <td>${r.mu.toFixed(5)}</td>
+            <td>${r.z.toFixed(3)}</td>
+            <td>${r.f.toFixed(3)}</td>
+            <td>${r.avg.toFixed(3)}</td>
+            <td>${r.deltaP.toFixed(2)}</td>
+            <td>${r.increment.toFixed(3)}</td>
+            <td><strong>${r.m.toFixed(3)}</strong></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function drawChart() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+    if (!calculationData.pressure.length) return;
+
+    const margin = { top: 30, right: 30, bottom: 60, left: 80 };
+    const chartW = w - margin.left - margin.right;
+    const chartH = h - margin.top - margin.bottom;
+
+    const xMin = Math.min(...calculationData.pressure);
+    const xMax = Math.max(...calculationData.pressure);
+    const yMin = 0;
+    const yMax = Math.max(...calculationData.m_p) * 1.08;
+
+    const xMap = x => margin.left + (x - xMin) / (xMax - xMin) * chartW;
+    const yMap = y => h - margin.bottom - (y - yMin) / (yMax - yMin) * chartH;
+
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    const grid = 6;
+    for (let i = 0; i <= grid; i++) {
+        const x = margin.left + chartW * i / grid;
+        const y = margin.top + chartH * i / grid;
+        ctx.beginPath(); ctx.moveTo(x, margin.top); ctx.lineTo(x, h - margin.bottom); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(w - margin.right, y); ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(margin.left, margin.top); ctx.lineTo(margin.left, h - margin.bottom); ctx.lineTo(w - margin.right, h - margin.bottom); ctx.stroke();
+
+    ctx.fillStyle = '#000';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= grid; i++) {
+        const xVal = xMin + (xMax - xMin) * i / grid;
+        const x = xMap(xVal);
+        ctx.fillText(xVal.toFixed(1), x, h - margin.bottom + 18);
+    }
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= grid; i++) {
+        const yVal = yMin + (yMax - yMin) * i / grid;
+        const y = yMap(yVal);
+        ctx.fillText(yVal.toFixed(0), margin.left - 8, y + 4);
+    }
+
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('压力 p (MPa)', margin.left + chartW / 2, h - 18);
+    ctx.save();
+    ctx.translate(22, margin.top + chartH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('假压力 m(p)', 0, 0);
+    ctx.restore();
+
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    calculationData.pressure.forEach((x, i) => {
+        const px = xMap(x), py = yMap(calculationData.m_p[i]);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = '#e74c3c';
+    calculationData.pressure.forEach((x, i) => {
+        const px = xMap(x), py = yMap(calculationData.m_p[i]);
+        ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+    });
+}
+
+function queryPressure() {
+    const q = parseFloat(document.getElementById('queryPressure').value);
+    if (!Number.isFinite(q)) return alert('请输入有效压力值');
+    const x = calculationData.pressure;
+    const y = calculationData.m_p;
+    if (!x.length) return alert('请先计算');
+    if (q < x[0] || q > x[x.length - 1]) return alert(`压力值必须在 ${x[0].toFixed(2)} 到 ${x[x.length - 1].toFixed(2)} MPa 之间`);
+
+    if (q === x[0]) return showQuery(q, y[0]);
+    if (q === x[x.length - 1]) return showQuery(q, y[y.length - 1]);
+
+    let lower = 0;
+    for (let i = 0; i < x.length - 1; i++) {
+        if (x[i] <= q && q <= x[i + 1]) { lower = i; break; }
+    }
+    const ratio = (q - x[lower]) / (x[lower + 1] - x[lower]);
+    const mq = y[lower] + (y[lower + 1] - y[lower]) * ratio;
+    showQuery(q, mq);
+}
+
+function showQuery(q, m) {
+    document.getElementById('queryResult').innerHTML = `压力 <span class="highlight">${q.toFixed(2)} MPa</span> 对应的假压力为 <span class="query-value">${m.toFixed(3)}</span>`;
+}
+</script>
 </body>
 </html>
