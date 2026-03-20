@@ -300,22 +300,22 @@
                 
                 <div class="form-group">
                     <label for="pressure">压力 p (MPa)：</label>
-                    <input type="text" id="pressure" placeholder="例如: 27.95 26.91 25.87 ..." value="27.95 26.91 25.87 24.83 23.79 22.75 21.71 20.67 19.63 18.59 17.55 16.51 15.47 14.43 13.39 12.25 11.21">
+                    <input type="text" id="pressure" placeholder="例如: 27.95 26.91 25.87 ..." value="2.76 5.52 8.28 11.04 13.8 16.56 19.32 22.08 24.84 27.6 30.36">
                 </div>
                 
                 <div class="form-group">
                     <label for="viscosity">气体粘度 μg (mPa·s)：</label>
-                    <input type="text" id="viscosity" placeholder="例如: 0.0243 0.0237 0.0231 ..." value="0.0243 0.0237 0.0231 0.0226 0.022 0.0214 0.0208 0.0203 0.0197 0.0191 0.0185 0.018 0.0174 0.0169 0.0164 0.0159 0.0155">
+                    <input type="text" id="viscosity" placeholder="例如: 0.0243 0.0237 0.0231 ..." value="0.01286 0.0139 0.0153 0.0168 0.0184 0.0201 0.0217 0.0234 0.025 0.0266 0.02831">
                 </div>
                 
                 <div class="form-group">
                     <label for="zFactor">气体偏差因子 Z：</label>
-                    <input type="text" id="zFactor" placeholder="例如: 0.9008 0.8904 0.8805 ..." value="0.9008 0.8904 0.8805 0.8712 0.8626 0.8548 0.8477 0.8416 0.8365 0.826 0.8299 0.8286 0.8288 0.8305 0.8339 0.839 0.8457">
+                    <input type="text" id="zFactor" placeholder="例如: 0.9008 0.8904 0.8805 ..." value="0.937 0.822 0.832 0.794 0.77 0.763 0.775 0.797 0.827 0.86 0.896">
                 </div>
                 
                 <div class="form-group">
                     <label for="deltaP">压力步长 Δp (MPa)：</label>
-                    <input type="number" id="deltaP" value="1.04" step="0.01">
+                    <input type="number" id="deltaP" value="2.76" step="0.01">
                 </div>
                 
                 <button id="calculateBtn">计算假压力</button>
@@ -330,7 +330,7 @@
                             <tr>
                                 <th>序号</th>
                                 <th>压力 p (MPa)</th>
-                                <th>假压力 m(p) (10²MPa)</th>
+                                <th>假压力 m(p) (10^11 MPa/s)</th>
                             </tr>
                         </thead>
                         <tbody id="resultBody">
@@ -628,7 +628,7 @@
             ctx.translate(20, containerHeight / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.textAlign = 'center';
-            ctx.fillText('假压力 m(p) (10²MPa)', 0, 0);
+            ctx.fillText('假压力 m(p) (10^11 MPa/s)', 0, 0);
             ctx.restore();
             
             // 绘制标题
